@@ -26,8 +26,11 @@ Data Generated Within Project
 
 ### Rscript/
 R Script used for analysis
-- /**Association Anlaysis**:  R code for the selEnergyPerm Analysis                      
+- /**Association Anlaysis**:  
+  - R code for the selEnergyPerm Analysis                      
 - /**ContaminantIdentification_and_DiversityAnlaysis**: 
   - Rcode to identify contaminants and baseline diversity analysis
-- /**Data Preprocess**:   R code for processing raw input OTU and NLF protein data                           
-- /**Results**: R code for the bySex and byTreatment core analysis including processing selEnergyPerm results                                     
+- /**Data Preprocess**:   
+  - R code for processing raw input OTU and NLF protein data                           
+- /**Results**: 
+  - R code for the bySex and byTreatment core analysis including processing selEnergyPerm results                                     
