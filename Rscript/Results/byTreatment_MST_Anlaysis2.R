@@ -1,14 +1,13 @@
 rm(list=ls())
 gc()
 
-### Load Required Packages  ####
+### Install/Load Required Packages  ####
 library(compositions)
 library(data.table)
 library(reshape2)
 library(doParallel)
 library(igraph)
 library(caret)
-library(tidyverse)
 library(glmnet)
 library(vegan)
 library(keras)
@@ -24,14 +23,9 @@ library(stringr)
 library(ggsci)
 
 ## Start Cluster
-clus <- parallel::makeCluster(10) 
+clus <- parallel::makeCluster(10)
 doParallel::registerDoParallel(clus)
 
-## Set working dir
-setwd("C:/Users/andrew84/Documents/MicrobiomeProject/Data/R_Projects/Test/MST_Method/")
-
-## Load Functions
-Rcpp::sourceCpp("Functions/cpp_ksTest3.cpp")
 source(file = "Functions/functions1.R")
 
 
@@ -46,7 +40,6 @@ train_control <- trainControl(method="cv",
                               savePredictions = T,
                               allowParallel = TRUE,
                               summaryFunction = caret::multiClassSummary
-                              #summaryFunction = prSummary
 )
 
 tc1  <- trainControl(method="repeatedcv",
@@ -59,7 +52,6 @@ tc1  <- trainControl(method="repeatedcv",
                      savePredictions = T,
                      allowParallel = TRUE,
                      summaryFunction = caret::multiClassSummary
-                     #summaryFunction = prSummary
 )
 
 
@@ -75,9 +67,9 @@ colNames$Family = str_replace_all(colNames$Family,"\\.","")
 Name = if_else(stringr::str_length(colNames$Genus )==0,colNames$Family,colNames$Genus)
 colNames$names = Name
 ## data
-dat = data.frame( read_csv(file = "Data/byTreatment_adjSex_byGenus.csv") )
+dat = data.frame( read_csv(file = "Output/byTreatment_adjSex_byGenus_80sparse.csv") )
 table(dat[,1])
-sampleID = data.frame( ID = data.frame(read_csv(file = "Data/bySex_nasalMbiome_byGenus.csv")[,1] )[,1])
+sampleID = data.frame( ID = data.frame(read_csv(file = "Output/bySex_nasalMbiome_byGenus.csv")[,1] )[,1])
 prot = data.frame(read_csv(file = "Output/NLF_bySubjectGroup.csv"));colnames(prot) = str_replace_all(colnames(prot),"..ug.mL.",replacement = "")
 procData = processCompData(dat)
 dat = procData$processedData
@@ -125,7 +117,8 @@ lrs.df = data.frame(ID  = sampleID$ID,lrs.df)
 dat.intg = left_join(prot,lrs.df)
 bool = !is.na(rowSums(dat.intg[,-2:-1]))
 keepID = data.frame(ID = dat.intg$ID[bool])
-metadata = read_csv("Data/2019_09_13 ELFmetadata.csv")
+metadata = read.csv("Data/2019_09_13 ELFmetadata.csv")
+colnames(metadata)[1] = "ID"
 metadata = left_join(keepID,metadata)
 dat.intg = dat.intg[bool,]
 cormat = cor(dat.intg[,-2:-1],method = "spearman")
@@ -225,15 +218,17 @@ ggplot(coords.df,aes(PC1,PC2,Fill = Group))+
 ##-----------------------------------------*
 ## Visualize Signature ####
 ##-----------------------------------------*
-sign = feature.df %>% 
-  gather("Ratio","Value",2:ncol(feature.df)) %>% 
-  group_by(Status,Ratio) %>% 
+colNames = data.frame(colNames)
+sign = feature.df %>%
+  gather("Ratio","Value",2:ncol(feature.df)) %>%
+  group_by(Status,Ratio) %>%
   summarise(mnValue = mean(Value),CI = ((1.96*sd(Value))/sqrt(n())),lb = mnValue - CI,ub = mnValue + CI)
-order = sign %>% 
-  filter(Status==impClass) %>% 
+order = sign %>%
+  filter(Status==impClass) %>%
   arrange(desc(mnValue))
 sign$Ratio = factor(sign$Ratio,levels = order$Ratio)
 lcolor = if_else(sign$mnValue>0,"blue","red")
+heatmap.dat = sign
 ## parse ratio
 sign = separate(sign,col =2,into = c("numID","denomID"),sep = "___",remove = F )
 cn.num = colNames;colnames(cn.num)[3:4] = c("numID","num")
@@ -241,7 +236,7 @@ cn.denom = colNames;colnames(cn.denom)[3:4] = c("denomID","denom")
 sign = left_join(sign,cn.denom[,3:4],by = "denomID")
 sign = left_join(sign,cn.num[3:4],by = "numID")
 sign$ratio_name = paste0("frac(",sign$num, ",", sign$denom,")")
-  
+
 write_csv(sign,path = "Output/suppTables/byTreatment_indvAnlaysisofLogRatios.csv")
 tiff(filename = "Figures/byTreatment_lrSign_colChart.tiff",width = 3.5,height = 7.1,units = "in",res = 300)
 ggplot(sign,aes(mnValue,Status,col = Status,fill = Status))+
@@ -250,7 +245,6 @@ ggplot(sign,aes(mnValue,Status,col = Status,fill = Status))+
   scale_fill_brewer(palette = "Set2")+
   geom_errorbar(aes(xmin = lb, xmax = ub),width = .5,size = .5,alpha = 1,col = "black")+
   geom_point(aes(fill = Status),shape = 21,size = 2,col = "black")+
-  #geom_vline(xintercept = 0,col = "black",size = 1,lty = "dashed")+
   facet_grid(ratio_name~.,labeller = label_parsed)+
   xlab("Mean logratio")+
   theme_bw()+
@@ -264,7 +258,7 @@ ggplot(sign,aes(mnValue,Status,col = Status,fill = Status))+
     legend.position = "top",
     legend.text = element_text(size = 8),
     legend.margin = margin(0,0,0,0,unit = "cm"),
-    legend.box.spacing = unit(0,units = "in"), 
+    legend.box.spacing = unit(0,units = "in"),
     legend.box.margin = margin(0,0,0.1,0,unit = "cm"),
     legend.key.height = unit(.1,units = "in"),
     axis.text.x =  element_text(size = 8),
@@ -288,10 +282,10 @@ eg = 100*clo(eg)
 coords.df = data.frame(Treatment = feature.df[,1],mds$points)
 colnames(coords.df)[-1] = paste0("Dim",1:ncol(coords.df[,-1]))
 ## Compute Centroids
-centroid = coords.df %>% 
-  gather(key = "Dim",value = "Val",2:ncol(coords.df)) %>% 
-  group_by(Treatment,Dim) %>% 
-  summarise(mn = mean(Val)) %>% 
+centroid = coords.df %>%
+  gather(key = "Dim",value = "Val",2:ncol(coords.df)) %>%
+  group_by(Treatment,Dim) %>%
+  summarise(mn = mean(Val)) %>%
   spread(key = "Dim",value = "mn")
 disp = left_join(coords.df,centroid,by = 'Treatment')
 ## Plot
@@ -314,7 +308,7 @@ ggplot(data = coords.df,aes(Dim1,Dim2,col = Treatment,fill = Treatment))+
         axis.title.y = element_text(size = 8,face = "bold"),
         legend.text = element_text(size = 8),
         #legend.direction = "horizontal",
-        legend.margin = margin(0,0,0,0,unit = "cm"),legend.box.spacing = unit(0,units = "in"), 
+        legend.margin = margin(0,0,0,0,unit = "cm"),legend.box.spacing = unit(0,units = "in"),
         legend.title = element_blank(),
         #legend.box.background = element_rect(colour = "black"),legend.key = element_rect(colour = "black"),
         legend.position = "top",legend.key.size = unit(.15,units = "in"),
@@ -366,13 +360,13 @@ ggplot(vi,aes(Ratio,Value,fill  = Group))+
         axis.title.y = element_blank(),
         axis.title.x = element_text(size = 8,face = "bold"),
         legend.text = element_text(size = 8),
-        legend.margin = margin(0,0,0,0,unit = "cm"),legend.box.spacing = unit(0,units = "in"), 
+        legend.margin = margin(0,0,0,0,unit = "cm"),legend.box.spacing = unit(0,units = "in"),
         legend.title = element_blank(),
         legend.position = "top",legend.key.size = unit(.15,units = "in"),
         axis.text.x = element_text(size = 8,face = "bold",hjust = .5)
         ,plot.caption = element_text(size = 8))
 dev.off()
-  
+
 ## Get laodings
 loading = as.matrix(glm.mdl1$finalModel$loading.weights)[,1:num_comps]
 loading = data.frame(Ratio = rownames(loading),(loading))
@@ -381,7 +375,7 @@ loading = gather(loading,'Component',"Value",2:ncol(loading))
 scores = glm.mdl1$finalModel$scores
 scores = foreach(ii = 1:ncol(scores),.combine = cbind)%do%{
   data.frame(scores[,ii])
-}  
+}
 colnames(scores) = paste0("X",1:ncol(scores))
 glm.mdl1$finalModel$loadings
 coords.df = data.frame(Group = feature.df[,1],scores)
@@ -427,78 +421,6 @@ ggplot(loading,aes(reorder(Ratio,Value),Value))+
         legend.key.size = unit(.05,units = "in"),legend.text = element_text(size = 8),legend.title = element_text(size = 8),
         legend.background = element_rect(colour = "black"))
 
-ggplot(coords.df,aes(Group,Comp1,Fill = Group,col = Group))+
-  geom_boxplot()+
-  geom_jitter(alpha = 0.5,width = .1,size = 2)+
-  #scale_alpha_continuous(range = c(0, 1))+
-  scale_shape_manual(values = c(21,24,22))+
-  scale_color_viridis_d(end = .75,option = "D")+
-  #scale_fill_d3()+
-  theme_bw()+
-  theme(legend.position = "none",
-        axis.title =element_blank(),
-        axis.text.x =  element_text(size = 12,face = "bold"),
-        axis.text.y = element_text(size = 12),
-        #panel.grid = element_blank(),
-        legend.key.size = unit(.05,units = "in"),legend.text = element_text(size = 8),legend.title = element_text(size = 8),
-        legend.background = element_rect(colour = "black"))
-
-ggplot(coords.df,aes(Group,X2,Fill = Group,col = Group))+
-  geom_boxplot()+
-  geom_jitter(alpha = 0.5,width = .1,size = 2)+
-  #scale_alpha_continuous(range = c(0, 1))+
-  scale_shape_manual(values = c(21,24,22))+
-  scale_color_viridis_d(end = .75,option = "D")+
-  #scale_fill_d3()+
-  theme_bw()+
-  theme(legend.position = "top",
-        axis.title = element_text(face = "bold",size = 20),
-        axis.text = element_text(size = 8),
-        #panel.grid = element_blank(),
-        legend.key.size = unit(.05,units = "in"),legend.text = element_text(size = 8),legend.title = element_text(size = 8),
-        legend.background = element_rect(colour = "black"))
-ggplot(loading,aes(reorder(Ratio,Comp.1),Comp.1))+
-  geom_col(col = "black",fill = "grey40")+
-  #geom_jitter(alpha = 0.5,width = .1)+
-  scale_alpha_continuous(range = c(0, 1))+
-  scale_shape_manual(values = c(21,24,22))+
-  scale_color_viridis_d(end = .75,option = "D")+
-  theme_bw()+
-  theme(legend.position = "top",
-        axis.title = element_text(face = "bold",size = 20),
-        axis.text = element_text(size = 8),
-        #panel.grid = element_blank(),
-        legend.key.size = unit(.05,units = "in"),legend.text = element_text(size = 8),legend.title = element_text(size = 8),
-        legend.background = element_rect(colour = "black"))
-ggplot(loading,aes(reorder(Ratio,Comp.2),Comp.2))+
-  geom_col(col = "black",fill = "grey40")+
-  #geom_jitter(alpha = 0.5,width = .1)+
-  scale_alpha_continuous(range = c(0, 1))+
-  scale_shape_manual(values = c(21,24,22))+
-  scale_color_viridis_d(end = .75,option = "D")+
-  theme_bw()+
-  theme(legend.position = "top",
-        axis.title = element_text(face = "bold",size = 20),
-        axis.text = element_text(size = 8),
-        #panel.grid = element_blank(),
-        legend.key.size = unit(.05,units = "in"),legend.text = element_text(size = 8),legend.title = element_text(size = 8),
-        legend.background = element_rect(colour = "black"))
-ggplot(coords.df,aes(X1,X2,Fill = Group))+
-  #stat_density_2d(geom = "polygon", aes(alpha = (..level..)^3, fill = Group),na.rm = T,show.legend = F)+
-  scale_alpha_continuous(range = c(0, 1))+
-  scale_shape_manual(values = c(21,24,22))+
-  scale_color_lancet()+
-  scale_fill_lancet()+
-  geom_point(aes(col  = Group),alpha = .6,size = 3)+
-  theme_bw()+
-  theme(legend.position = "top",
-        axis.title = element_text(face = "bold",size = 20),
-        axis.text = element_text(size = 8),
-        #panel.grid = element_blank(),
-        legend.key.size = unit(.05,units = "in"),legend.text = element_text(size = 8),legend.title = element_text(size = 8),
-        legend.background = element_rect(colour = "black"))
-
-
 
 
 
@@ -507,7 +429,7 @@ ggplot(coords.df,aes(X1,X2,Fill = Group))+
 ###----------------------------------------*
 ### Heatmap of signature
 ###----------------------------------------*
-feats = sign[,1:3]
+feats = heatmap.dat[,1:3]
 feats = spread(feats,"Status","mnValue")
 feats = data.frame(feats)
 
@@ -597,7 +519,7 @@ mdls = trainML_Models(trainLRs =  data.frame(feature.df[,-1]),
                       cvMethod = "repeatedcv",mtry_ = 1,numFolds = 10,numRepeats = 20,
                       testIDs = NULL,
                       bagModels = F,sampleSize = round(percentBag*nrow(trainData1)),
-                      models = "pls") 
+                      models = "pls")
 ph = mdls$performance
 
 ## Test Predictions ####
@@ -634,7 +556,7 @@ roc.df = data.frame()
 for(i in 1:length(nms)){
   rc = rs[[i]]
   x = pROC::ci.auc(rc[[1]])
-  x = paste0(" AUC=",round(x[2],digits = 3)," (95% CI:",round(x[1],digits = 3),"-",round(x[3],digits = 3),")") 
+  x = paste0(" AUC=",round(x[2],digits = 3)," (95% CI:",round(x[1],digits = 3),"-",round(x[3],digits = 3),")")
   ph = data.frame(sens = rc[[1]]$sensitivities,spec = 1 - rc[[1]]$specificities)
   ph$Comp = paste0(nms[i],x)
   roc.df = rbind(roc.df,ph)
@@ -648,7 +570,7 @@ ggplot(roc.df,aes(spec,sens,col = Comp,group = Comp))+
   xlab("1-Specificity")+
   ylab("Sensitivity")+
   annotate("text", x=.03, y=1.1,size = 2.5, hjust = 0, fontface = "bold",
-           label = paste(mcx) ) + 
+           label = paste(mcx) ) +
   geom_abline(slope = 1,col = "grey")+
   theme(legend.position = "top",
         legend.title = element_blank(),
@@ -694,13 +616,13 @@ mdls = trainML_Models(trainLRs =  data.frame(intFeats1),
                       cvMethod = "repeatedcv",mtry_ = 1,numFolds = 10,numRepeats = 50,
                       testIDs = NULL,
                       bagModels = F,sampleSize = round(percentBag*nrow(trainData1)),
-                      models = "pls") 
+                      models = "pls")
 mdls$performance
 mdls$models$pls1
 
 res.mbiom = mdls$models$pls1$resample
 res.mbiom$Rep = str_split(res.mbiom$Resample,"\\.",simplify = T,n = 2)[,2]
-res.mbiom =  aggregate(AUC ~ Rep, data = res.mbiom, 
+res.mbiom =  aggregate(AUC ~ Rep, data = res.mbiom,
                  FUN = function(x) mean(x) )
 res.mbiom$Model = "Mbiome Only"
 
@@ -717,7 +639,7 @@ for(i in 1:nrow(cc)){
   ph$comb =paste0(cc[i,1],"_",cc[i,2])
   dcvScores = rbind(dcvScores,ph)
 }
-dcvScores1 = aggregate(rowmean ~ Ratio, data = dcvScores, 
+dcvScores1 = aggregate(rowmean ~ Ratio, data = dcvScores,
           FUN = function(x) mean(x) )
 
 dcvScores2 = dcvScores1[order(dcvScores1$rowmean,decreasing = T),]
@@ -733,12 +655,12 @@ mdls = trainML_Models(trainLRs =  data.frame(intFeats),
                       cvMethod = "repeatedcv",mtry_ = 1,numFolds = 10,numRepeats = 50,
                       testIDs = NULL,
                       bagModels = F,sampleSize = round(percentBag*nrow(trainData1)),
-                      models = "pls") 
+                      models = "pls")
 mdls$performance
 varImp(mdls$models$pls1)
 res = mdls$models$pls1$resample
 res$Rep = str_split(res$Resample,"\\.",simplify = T,n = 2)[,2]
-res =  aggregate(AUC ~ Rep, data = res, 
+res =  aggregate(AUC ~ Rep, data = res,
                  FUN = function(x) mean(x) )
 res$Model = "Mbiome+Protein"
 ## Protein Only
@@ -749,12 +671,12 @@ mdls = trainML_Models(trainLRs =  x,
                       cvMethod = "repeatedcv",mtry_ = 1,numFolds = 10,numRepeats = 50,
                       testIDs = NULL,
                       bagModels = F,sampleSize = round(percentBag*nrow(trainData1)),
-                      models = "pls") 
+                      models = "pls")
 mdls$performance
 varImp(mdls$models$pls1)
 res.prot = mdls$models$pls1$resample
 res.prot$Rep = str_split(res.prot$Resample,"\\.",simplify = T,n = 2)[,2]
-res.prot =  aggregate(AUC ~ Rep, data = res.prot, 
+res.prot =  aggregate(AUC ~ Rep, data = res.prot,
                  FUN = function(x) mean(x) )
 res.prot$Model = "Protein Only"
 
@@ -788,8 +710,8 @@ dev.off()
 ## Visualize Mediator Signature ####
 ##-----------------------------------------*
 ph = data.frame(Status = y_train,intFeats2)
-sign =  ph %>% 
-  gather("Ratio","Value",2:ncol(ph)) 
+sign =  ph %>%
+  gather("Ratio","Value",2:ncol(ph))
 sign$Ratio = str_replace_all(sign$Ratio,pattern = "___",replacement = " / ")
 my_comparisons = list(c("Ecig","Nonsmoker"),c("Ecig","Smoker"),c("Nonsmoker","Smoker"))
 rts = unique(sign$Ratio)
@@ -834,7 +756,7 @@ mdls = trainML_Models(trainLRs =  intFeats2,
                       cvMethod = "repeatedcv",mtry_ = 1,numFolds = 10,numRepeats = 20,
                       testIDs = NULL,
                       bagModels = F,sampleSize = round(percentBag*nrow(trainData1)),
-                      models = "pls") 
+                      models = "pls")
 ph = mdls$performance
 ## Test Predictions ####
 predsAll = mdls$predictionMatrix
@@ -869,7 +791,7 @@ roc.df = data.frame()
 for(i in 1:length(nms)){
   rc = rs[[i]]
   x = pROC::ci.auc(rc[[1]])
-  x = paste0(" AUC=",round(x[2],digits = 3)," (95% CI:",round(x[1],digits = 3),"-",round(x[3],digits = 3),")") 
+  x = paste0(" AUC=",round(x[2],digits = 3)," (95% CI:",round(x[1],digits = 3),"-",round(x[3],digits = 3),")")
   ph = data.frame(sens = rc[[1]]$sensitivities,spec = 1 - rc[[1]]$specificities)
   ph$Comp = paste0(nms[i],x)
   roc.df = rbind(roc.df,ph)
@@ -883,7 +805,7 @@ ggplot(roc.df,aes(spec,sens,col = Comp,group = Comp))+
   xlab("1-Specificity")+
   ylab("Sensitivity")+
   annotate("text", x=.03, y=.2,size = 2.25, hjust = 0, fontface = "bold",
-           label = paste(mcx) ) + 
+           label = paste(mcx) ) +
   geom_abline(slope = 1,col = "grey")+
   theme(legend.position = "top",legend.title = element_blank(),
         axis.line = element_line(size = .5),
@@ -906,7 +828,7 @@ dev.off()
 #   rstatix::wilcox_test(Value ~ Status) %>%
 #   adjust_pvalue(method = 'BH')
 # pairwise.test$comp = colnames(intFeats2)[1]
-# 
+#
 # krusTest = data.frame()
 # for(i in 1:ncol(intFeats2))
 # pairwise.test = ph2 %>%
@@ -1045,9 +967,9 @@ dev.off()
 ##------------------------------------------*
 ### Model Performance Comparisions ####
 ##--------------------------------------------*
-auc.df1 =  aggregate(AUC ~ Model, data = auc.df, 
+auc.df1 =  aggregate(AUC ~ Model, data = auc.df,
                     FUN = function(x) mean(x) )
-auc.df.sd =  aggregate(AUC ~ Model, data = auc.df, 
+auc.df.sd =  aggregate(AUC ~ Model, data = auc.df,
                      FUN = function(x) sd(x) )
 auc.df1$CI = (1.96*auc.df.sd$AUC) / (sqrt(nrow(res.mbiom)))
 auc.df1$lb = auc.df1$AUC-auc.df1$CI
@@ -1109,7 +1031,7 @@ ggplot(loading,aes(reorder(Ratio,Weight),Weight))+
         axis.title.y = element_text(size = 8,face = "bold"),
         axis.title.x = element_blank(),
         legend.text = element_text(size = 6),
-        legend.margin = margin(0,0,0,0,unit = "cm"),legend.box.spacing = unit(0,units = "in"), 
+        legend.margin = margin(0,0,0,0,unit = "cm"),legend.box.spacing = unit(0,units = "in"),
         legend.title = element_blank(),
         legend.position = "top",legend.key.size = unit(.15,units = "in"),
         plot.caption = element_text(size = 8))
@@ -1137,13 +1059,13 @@ yy = data.frame(Status = y_train,yhat = Yhat)
 ggplot(yy,aes(Status,yhat))+
   geom_boxplot()
 
-glm.mdl1$finalModel$Yscores  
+glm.mdl1$finalModel$Yscores
 
 ## Get Scores
 scores = glm.mdl1$finalModel$Yscores
 scores = foreach(ii = 1:ncol(scores),.combine = cbind)%do%{
   data.frame(scores[,ii])
-}  
+}
 colnames(scores) = paste0("Comp.",1:ncol(scores))
 coords.df = data.frame(Group = y_train,scores)
 yy = coords.df[,2:3]
@@ -1151,7 +1073,7 @@ yy = coords.df[,2:3]
 scores = glm.mdl1$finalModel$scores
 scores = foreach(ii = 1:ncol(scores),.combine = cbind)%do%{
   data.frame(scores[,ii])
-}  
+}
 colnames(scores) = paste0("Comp.",1:ncol(scores))
 coords.df = data.frame(Group = y_train,scores)
 yy = coords.df[,2:3]
@@ -1199,7 +1121,7 @@ plsVariation = glm.mdl1$finalModel$Xvar/glm.mdl1$finalModel$Xtotvar
 scores = glm.mdl1$finalModel$Yscores
 scores = foreach(ii = 1:ncol(scores),.combine = cbind)%do%{
   data.frame(scores[,ii])
-}  
+}
 colnames(scores) = paste0("Comp.",1:ncol(scores))
 coords.df = data.frame(Group = y_train,scores)
 yy = coords.df[,2:3]
@@ -1207,7 +1129,7 @@ yy = coords.df[,2:3]
 scores = glm.mdl1$finalModel$scores
 scores = foreach(ii = 1:ncol(scores),.combine = cbind)%do%{
   data.frame(scores[,ii])
-}  
+}
 colnames(scores) = paste0("Comp.",1:ncol(scores))
 coords.df = data.frame(Group = y_train,scores)
 yy = coords.df[,2:3]
@@ -1261,7 +1183,7 @@ ggplot(corData1,aes(Comp.1,`Neutrophil.Elastase / IL.8`))+
         axis.text.x = element_text(size = 8,face = "bold"),
         axis.title = element_text(size = 8,face = "bold"),
         legend.text = element_text(size = 8),
-        legend.margin = margin(0,0,0,0,unit = "cm"),legend.box.spacing = unit(0,units = "in"), 
+        legend.margin = margin(0,0,0,0,unit = "cm"),legend.box.spacing = unit(0,units = "in"),
         legend.title = element_blank(),
         legend.position = "top",legend.key.size = unit(.15,units = "in"),
         plot.caption = element_text(size = 8))
@@ -1286,7 +1208,7 @@ ggplot(corData1,aes(Comp.1,`Total.IgA / IL.8`))+
         axis.text.x = element_text(size = 8,face = "bold"),
         axis.title = element_text(size = 8,face = "bold"),
         legend.text = element_text(size = 8),
-        legend.margin = margin(0,0,0,0,unit = "cm"),legend.box.spacing = unit(0,units = "in"), 
+        legend.margin = margin(0,0,0,0,unit = "cm"),legend.box.spacing = unit(0,units = "in"),
         legend.title = element_blank(),
         legend.position = "top",legend.key.size = unit(.15,units = "in"),
         plot.caption = element_text(size = 8))
@@ -1307,7 +1229,7 @@ ggplot(coords.df,aes(Group,Comp.1,fill = Group))+
         axis.title.x = element_text(size = 8,face = "bold"),
         axis.title.y = element_blank(),
         legend.text = element_text(size = 6),
-        legend.margin = margin(0,0,0,0,unit = "cm"),legend.box.spacing = unit(0,units = "in"), 
+        legend.margin = margin(0,0,0,0,unit = "cm"),legend.box.spacing = unit(0,units = "in"),
         legend.title = element_blank(),
         legend.position = "none",legend.key.size = unit(.15,units = "in"),
         plot.caption = element_text(size = 8))
@@ -1424,17 +1346,17 @@ p.mat[lt] = p.adjust(p.mat[lt],method = "fdr")
 M = cor(corData)
 col <- colorRampPalette(c("#BB4444", "#EE9988", "#FFFFFF", "#77AADD", "#4477AA"))
 tiff(filename = "Figures/byTreatent_smokerCor.tiff",width = 6,height = 6,units = "in",res = 300,bg = "transparent")
-corrplot::corrplot(M, method="circle", col=col(200),  
+corrplot::corrplot(M, method="circle", col=col(200),
          type="upper", mar = c(0,0,0,0),
          addrect = 10,outline = T,rect.col = "black",addshade = "all",
-         #order="hclust", 
+         #order="hclust",
          tl.cex = .65,
          #addCoef.col = "black", # Add coefficient of correlation
          tl.col="black", tl.srt=45, #Text label color and rotation
          # Combine with significance
          p.mat = p.mat, sig.level = 0.1, insig = "label_sig", pch.cex = 1.25,pch.col = "black",
          # hide correlation coefficient on the principal diagonal
-         diag=FALSE 
+         diag=FALSE
 )
 dev.off()
 
@@ -1484,17 +1406,17 @@ p.mat[lt] = p.adjust(p.mat[lt],method = "fdr")
 M = cor(corData)
 col <- colorRampPalette(c("#BB4444", "#EE9988", "#FFFFFF", "#77AADD", "#4477AA"))
 tiff(filename = "Figures/byTreatent_NonsmokerCor.tiff",width = 6,height = 6,units = "in",res = 300,bg = "transparent")
-corrplot::corrplot(M, method="circle", col=col(200),  
+corrplot::corrplot(M, method="circle", col=col(200),
                    type="upper", mar = c(0,0,0,0),
                    addrect = 10,outline = T,rect.col = "black",addshade = "all",
-                   #order="hclust", 
+                   #order="hclust",
                    tl.cex = .65,
                    #addCoef.col = "black", # Add coefficient of correlation
                    tl.col="black", tl.srt=45, #Text label color and rotation
                    # Combine with significance
                    p.mat = p.mat, sig.level = 0.1, insig = "label_sig", pch.cex = 1.25,pch.col = "black",
                    # hide correlation coefficient on the principal diagonal
-                   diag=FALSE 
+                   diag=FALSE
 )
 dev.off()
 
@@ -1544,17 +1466,17 @@ p.mat[lt] = p.adjust(p.mat[lt],method = "fdr")
 M = cor(corData)
 col <- colorRampPalette(c("#BB4444", "#EE9988", "#FFFFFF", "#77AADD", "#4477AA"))
 tiff(filename = "Figures/byTreatent_EcigCor.tiff",width = 6,height = 6,units = "in",res = 300,bg = "transparent")
-corrplot::corrplot(M, method="circle", col=col(200),  
+corrplot::corrplot(M, method="circle", col=col(200),
                    type="upper", mar = c(0,0,0,0),
                    addrect = 10,outline = T,rect.col = "black",addshade = "all",
-                   #order="hclust", 
+                   #order="hclust",
                    tl.cex = .65,
                    #addCoef.col = "black", # Add coefficient of correlation
                    tl.col="black", tl.srt=45, #Text label color and rotation
                    # Combine with significance
                    p.mat = p.mat, sig.level = 0.1, insig = "label_sig", pch.cex = 1.25,pch.col = "black",
                    # hide correlation coefficient on the principal diagonal
-                   diag=FALSE 
+                   diag=FALSE
 )
 dev.off()
 
@@ -1570,7 +1492,7 @@ keepComp = betweenTreatmentCorrelations1[betweenTreatmentCorrelations1$Comp%in%c
 ref =data.frame()
 g = unique(betweenTreatmentCorrelations$Group)
 for(gr in g){
-  ph = betweenTreatmentCorrelations %>% 
+  ph = betweenTreatmentCorrelations %>%
     filter(Group==gr)
   keepComp.ecig = left_join(keepComp,ph)
   phh = keepComp.ecig
@@ -1584,7 +1506,7 @@ for(gr in g){
   keepComp.ecig$Y = paste0("(",phh$num,"/",phh$denom,")")
   keepComp.ecig$p.adj = p.adjust(keepComp.ecig$p,method = "BH")
   keepComp.ecig$signf = if_else(keepComp.ecig$p.adj<0.1,"*","")
-  keepComp.ecig = keepComp.ecig %>% 
+  keepComp.ecig = keepComp.ecig %>%
     select(X,Y,signf,Group)
   ref = rbind(ref,keepComp.ecig)
 }
@@ -1594,7 +1516,7 @@ ref = spread(ref,"Group","signf")
 ref.cor =data.frame()
 g = unique(betweenTreatmentCorrelations$Group)
 for(gr in g){
-  ph = betweenTreatmentCorrelations %>% 
+  ph = betweenTreatmentCorrelations %>%
     filter(Group==gr)
   keepComp.ecig = left_join(keepComp,ph)
   phh = keepComp.ecig
@@ -1607,7 +1529,7 @@ for(gr in g){
   phh = left_join(phh,loading_)
   keepComp.ecig$Y = paste0("(",phh$num," / ",phh$denom,")")
   keepComp.ecig$signf = if_else(keepComp.ecig$p.adj<0.1,"*","")
-  keepComp.ecig = keepComp.ecig %>% 
+  keepComp.ecig = keepComp.ecig %>%
     select(X,Y,Cor,Group)
   ref.cor = rbind(ref.cor,keepComp.ecig)
 }
@@ -1624,7 +1546,7 @@ tiff(filename = "Figures/byTreatment_corrHeatmap.tiff",width = 5,height = 7,unit
 gplots::heatmap.2( mat,
                    col = gplots::redblue(n = 100), #viridis::viridis(n = 1000,direction = 1,option = "C"),#gplots::redblue(n = 1000) ,#viridis::viridis(n = 1000,option = "D"),#,
                    Rowv = TRUE,Colv = T,cellnote = mat.signf,notecex = 1.2,notecol = "black",
-                   margins = c(2,20), 
+                   margins = c(2,20),
                    sepwidth=c(0.01,0.01),lwid = c(.1,2),lhei = c(.02,1),
                    #sepcolor="white",colsep=1:ncol(mat),rowsep=1:nrow(mat),
                    hclustfun = function(x) hclust(x, method = "average"),
@@ -1645,7 +1567,7 @@ tiff(filename = "Figures/byTreatment_corrHeatmapLegend.tiff",width = 5,height = 
 gplots::heatmap.2( mat,
                    col = gplots::redblue(n = 100), #viridis::viridis(n = 1000,direction = 1,option = "C"),#gplots::redblue(n = 1000) ,#viridis::viridis(n = 1000,option = "D"),#,
                    Rowv = TRUE,Colv = T,cellnote = mat.signf,notecex = 1.2,notecol = "black",
-                   # margins = c(2,20), 
+                   # margins = c(2,20),
                    #sepwidth=c(0.01,0.01),lwid = c(.1,2),
                    lhei = c(.25,1),
                    # #sepcolor="white",colsep=1:ncol(mat),rowsep=1:nrow(mat),
@@ -1686,7 +1608,7 @@ gplots::heatmap.2( mat,
                    col = gplots::redblue(n = 100), #viridis::viridis(n = 1000,direction = 1,option = "C"),#gplots::redblue(n = 1000) ,#viridis::viridis(n = 1000,option = "D"),#,
                    Rowv = TRUE,Colv = T,
                    cellnote = round(mat,2),notecex = .80,notecol = "black",
-                   margins = c(5,15), 
+                   margins = c(5,15),
                    sepwidth=c(0.01,0.01),lwid = c(.1,2),lhei = c(.1,1),
                    sepcolor="white",colsep=1:ncol(mat),rowsep=1:nrow(mat),
                    hclustfun = function(x) hclust(x, method = "average"),
@@ -1719,25 +1641,25 @@ colNodes = c()
 g = 1
 fdr = 0.1
 for(i in 1:nrow(net)){
- 
+
   if(net$p.adj[i]<=fdr){
    colNodes[g] = as.vector(net[i,1])
    g = g+1
    colNodes[g] = as.vector(net[i,2])
    g= g+1
   }
-  
+
 }
 g1 = graph_from_edgelist(as.matrix(net[,c(1:2)]),directed = F)
 g1 = igraph::simplify(g1, remove.loops = TRUE,
                       edge.attr.comb = igraph_opt("edge.attr.comb"))
 el = data.frame(X = get.edgelist(g1)[,1],Y =  get.edgelist(g1)[,2])
 el  =left_join(el,net)
-edgeCol = if_else(el$p.adj<=fdr,if_else(el$Cor<0,"red","blue") ,"grey") 
+edgeCol = if_else(el$p.adj<=fdr,if_else(el$Cor<0,"red","blue") ,"grey")
 eweights = abs(el$Cor)
 vnames = names(V(g1))
-vcol = if_else(vnames %in% colNodes,"gold","grey") 
-vLabelCol = if_else(vnames %in% colNodes,"royalblue","black") 
+vcol = if_else(vnames %in% colNodes,"gold","grey")
+vLabelCol = if_else(vnames %in% colNodes,"royalblue","black")
 
 tiff(filename = "Figures/byTreatment_ecigNet.tiff",width = w,height = h,units = "in",res = 300)
 par(mar=c(0,2.5,0,2))
@@ -1756,25 +1678,25 @@ colNodes = c()
 g = 1
 fdr = 0.1
 for(i in 1:nrow(net)){
-  
+
   if(net$p.adj[i]<=fdr){
     colNodes[g] = as.vector(net[i,1])
     g = g+1
     colNodes[g] = as.vector(net[i,2])
     g= g+1
   }
-  
+
 }
 g1 = graph_from_edgelist(as.matrix(net[,c(1:2)]),directed = F)
 g1 = igraph::simplify(g1, remove.loops = TRUE,
                       edge.attr.comb = igraph_opt("edge.attr.comb"))
 el = data.frame(X = get.edgelist(g1)[,1],Y =  get.edgelist(g1)[,2])
 el  =left_join(el,net)
-edgeCol = if_else(el$p.adj<=fdr,if_else(el$Cor<0,"red","blue") ,"grey") 
+edgeCol = if_else(el$p.adj<=fdr,if_else(el$Cor<0,"red","blue") ,"grey")
 eweights = abs(el$Cor)
 vnames = names(V(g1))
-vcol = if_else(vnames %in% colNodes,"gold","grey") 
-vLabelCol = if_else(vnames %in% colNodes,"royalblue","black") 
+vcol = if_else(vnames %in% colNodes,"gold","grey")
+vLabelCol = if_else(vnames %in% colNodes,"royalblue","black")
 
 tiff(filename = "Figures/byTreatment_smokerNet.tiff",width = w,height = h,units = "in",res = 300)
 par(mar=c(0,2.5,0,2))
@@ -1794,26 +1716,26 @@ colNodes = c()
 g = 1
 fdr = 0.1
 for(i in 1:nrow(net)){
-  
+
   if(net$p.adj[i]<=fdr){
     colNodes[g] = as.vector(net[i,1])
     g = g+1
     colNodes[g] = as.vector(net[i,2])
     g= g+1
   }
-  
+
 }
 g1 = graph_from_edgelist(as.matrix(net[,c(1:2)]),directed = F)
 g1 = igraph::simplify(g1, remove.loops = TRUE,
                       edge.attr.comb = igraph_opt("edge.attr.comb"))
 el = data.frame(X = get.edgelist(g1)[,1],Y =  get.edgelist(g1)[,2])
 el  =left_join(el,net)
-edgeCol = if_else(el$p.adj<=fdr,if_else(el$Cor<0,"red","blue") ,"grey") 
+edgeCol = if_else(el$p.adj<=fdr,if_else(el$Cor<0,"red","blue") ,"grey")
 eweights = abs(el$Cor)
 
 vnames = names(V(g1))
-vcol = if_else(vnames %in% colNodes,"gold","grey") 
-vLabelCol = if_else(vnames %in% colNodes,"royalblue","black") 
+vcol = if_else(vnames %in% colNodes,"gold","grey")
+vLabelCol = if_else(vnames %in% colNodes,"royalblue","black")
 
 
 tiff(filename = "Figures/byTreatment_NonsmokerNet.tiff",width = w,height = h,units = "in",res = 300)
@@ -1847,7 +1769,7 @@ loading_ = data.frame(Ratio = rownames(loading_),Comp1 = loading_[,1],Comp2 = lo
 scores = glm.mdl1$finalModel$scores
 scores = foreach(ii = 1:ncol(scores),.combine = cbind)%do%{
   data.frame(scores[,ii])
-}  
+}
 colnames(scores) = paste0("Comp.",1:ncol(scores))
 coords.df = data.frame(Group = y_train,scores)
 ### Scores Plot
@@ -1876,7 +1798,7 @@ ggplot(coords.df,aes(Comp.1,Comp.2))+
         axis.text = element_text(size = 8),axis.title = element_text(size = 8,face = "bold"),
         legend.spacing.y = unit(-.1,"cm"),
         legend.text = element_text(size = 8))
-dev.off() 
+dev.off()
 ##--------*
 ### Mbiome
 ##----------*
@@ -1899,7 +1821,7 @@ cn.denom = colNames;colnames(cn.denom)[3:4] = c("denomID","denom")
 loading_ = left_join(loading_,cn.denom[,3:4],by = "denomID")
 loading_ = left_join(loading_,cn.num[3:4],by = "numID")
 loading_$ratio_name = paste0("frac(",loading_$num, ",", loading_$denom,")")
-loading_ = loading_ %>% 
+loading_ = loading_ %>%
   arrange(desc(Comp1))
 loading_$Ratio  = factor(x = loading_$Ratio,levels = loading_$Ratio)
 
@@ -1931,7 +1853,7 @@ ggplot(loading_,aes(reorder(Ratio,Comp2),Comp2))+
         axis.title = element_text(size = 8,face = "bold"),
         legend.spacing.y = unit(-.1,"cm"),
         legend.text = element_text(size = 8))
-  
+
 
 
 ## Get Scores
@@ -1939,7 +1861,7 @@ plsdaVariation = glm.mdl1$finalModel$Xvar  / glm.mdl1$finalModel$Xtotvar
 scores = glm.mdl1$finalModel$scores
 scores = foreach(ii = 1:ncol(scores),.combine = cbind)%do%{
   data.frame(scores[,ii])
-}  
+}
 colnames(scores) = paste0("Comp.",1:ncol(scores))
 coords.df = data.frame(Group = y_train,scores)
 scalingFactor = 13
@@ -1975,7 +1897,7 @@ ggplot(coords.df,aes(Comp.1,Comp.2))+
         axis.text = element_text(size = 8),axis.title = element_text(size = 8,face = "bold"),
         legend.spacing.y = unit(-.1,"cm"),
         legend.text = element_text(size = 8))
-dev.off() 
+dev.off()
 ##--------*
 ### Mbiome+Proteins
 ##----------*
@@ -1992,7 +1914,7 @@ loading_ = data.frame(Ratio = rownames(loading_),Comp1 = loading_[,1],Comp2 = lo
 scores = glm.mdl1$finalModel$scores
 scores = foreach(ii = 1:ncol(scores),.combine = cbind)%do%{
   data.frame(scores[,ii])
-}  
+}
 colnames(scores) = paste0("Comp.",1:ncol(scores))
 coords.df = data.frame(Group = y_train,scores)
 
@@ -2001,7 +1923,7 @@ coords.df = data.frame(Group = y_train,scores)
 loading_ = separate(loading_,col =1,into = c("numID","denomID"),sep = "___",remove = F )
 loading_$parse = if_else(str_detect(string = loading_$Ratio,pattern = "___V"),1,0)
 ## mbiome
-ph = loading_ %>% 
+ph = loading_ %>%
   filter(parse==1)
 cn.num = colNames;colnames(cn.num)[3:4] = c("numID","num")
 cn.denom = colNames;colnames(cn.denom)[3:4] = c("denomID","denom")
@@ -2009,7 +1931,7 @@ ph = left_join(ph,cn.denom[,3:4],by = "denomID")
 ph = left_join(ph,cn.num[3:4],by = "numID")
 ph$ratio_name = paste0("frac(",ph$num, ",", ph$denom,")")
 ## proteins
-ph2 = loading_ %>% 
+ph2 = loading_ %>%
   filter(parse!=1)
 ph2$num = ph2$numID
 ph2$denom = ph2$denomID
@@ -2020,7 +1942,7 @@ loading_$mag =sqrt((loading_$Comp1^2+loading_$Comp2^2))
 loading_$rank = rank(-loading_$mag )
 loading_$label = if_else(loading_$rank%in%1:8,loading_$ratio_name,"")
 loading_$col = if_else(loading_$rank%in%1:8,"darkblue","grey")
-loading1 = loading_ %>% 
+loading1 = loading_ %>%
   filter(rank %in%1:8)
 
 
@@ -2054,11 +1976,11 @@ ggplot(coords.df,aes(Comp.1,Comp.2))+
         axis.text.x = element_text(size = 8,face = "bold"),
         axis.title = element_text(size = 8,face = "bold"),
         legend.text = element_text(size = 8),
-        legend.margin = margin(0,0,0,0,unit = "cm"),legend.box.spacing = unit(0,units = "in"), 
+        legend.margin = margin(0,0,0,0,unit = "cm"),legend.box.spacing = unit(0,units = "in"),
         legend.title = element_blank(),
         legend.position = "top",legend.key.size = unit(.15,units = "in"),
         plot.caption = element_text(size = 8))
-dev.off() 
- 
- 
+dev.off()
+
+
 

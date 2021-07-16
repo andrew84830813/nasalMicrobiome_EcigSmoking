@@ -16,29 +16,22 @@ library(PRROC)
 library(energy)
 
 ## Start Cluster
-clus <- parallel::makeCluster(10) 
+clus <- parallel::makeCluster(10)
 doParallel::registerDoParallel(clus)
 
-## Set working dir
-setwd("C:/Users/andrew84/Documents/MicrobiomeProject/Data/R_Projects/Test/MST_Method/")
 
-## Load Functions
-Rcpp::sourceCpp("Functions/cpp_ksTest3.cpp")
 source(file = "Functions/functions1.R")
 
 
-## Model Traing Setup
+## Model Training Setup
 train_control <- trainControl(method="cv",
                               repeats = 5,
                               number = 10,
-                              #sampling = "rose",
-                              #number=100,
                               seeds = NULL,
                               classProbs = TRUE,
                               savePredictions = T,
                               allowParallel = TRUE,
                               summaryFunction = caret::multiClassSummary
-                              #summaryFunction = prSummary
 )
 
 tc1  <- trainControl(method="repeatedcv",
@@ -51,7 +44,6 @@ tc1  <- trainControl(method="repeatedcv",
                      savePredictions = T,
                      allowParallel = TRUE,
                      summaryFunction = caret::multiClassSummary
-                     #summaryFunction = prSummary
 )
 
 
@@ -67,9 +59,9 @@ Name = if_else(stringr::str_length(colNames$Genus )==0,colNames$Family,colNames$
 colNames$names = Name
 colNames = data.frame(colNames)
 ## Load Data
-dat = data.frame( read_csv(file = "Data/bySex_nasalMbiome_byGenus.csv") ) [,-1]
+dat = data.frame( read_csv(file = "Output/bySex_nasalMbiome_byGenus.csv") ) [,-1]
 table(dat$Sex)
-sampleID = data.frame( read_csv(file = "Data/bySex_nasalMbiome_byGenus.csv")[,1] ) 
+sampleID = data.frame( read_csv(file = "Output/bySex_nasalMbiome_byGenus.csv")[,1] )
 prot = data.frame(read_csv(file = "Output/NLF_bySex.csv"));colnames(prot) = str_replace_all(colnames(prot),"..ug.mL.",replacement = "")
 procData = processCompData(dat,minPrevalence = .80)
 dat = procData$processedData
@@ -85,9 +77,8 @@ results.perm = read_csv("Output/bySex_NasalMicrobiomeGenus_80sparse_10_repeatedC
 feature.df = read_csv(file = "Output/bySex_NasalMicrobiomeGenus_80sparse_10_keyFeatures.csv")
 feature.df = data.frame(feature.df)
 
-## INtegrate  Data
+## Integrate  Data
 lrs.df = getLogratioFromList(Ratio = colnames(feature.df[,-1]),raMatrix = dat[,-1],Class = dat[,1])
-#feature.df = data.frame(Status = dat[,1],lrs.df)
 lrs.df = data.frame(ID  = sampleID$X1,lrs.df)
 dat.intg = left_join(prot,lrs.df)
 bool = !is.na(rowSums(dat.intg[,-2:-1]))
@@ -97,16 +88,11 @@ cormat = cor(dat.intg[,-2:-1],method = "spearman")
 
 
 ###--------------------------------------*
-## Visualizer before after adj. ####
+## Visualizer Microbiome before after Sex adj. ####
 ##----------------------------------------*
-## Remove Sex effect Nasal Microbiome
-setwd("C:/Users/andrew84/Documents/MicrobiomeProject/Data/R_Projects/Test/ecig_microbiome/")
 ## By Genus
 df = data.frame( read_csv(file = "Output/bySex_nasalMbiome_byGenus.csv") ) [,-1]
-df2  = data.frame( read_csv(file = "Output/allSubjectGroup_nasalMbiome_byGenus.csv") )[,-1] 
-## All features
-# df = data.frame( read_csv(file = "Output/bySex_nasalMbiome.csv") ) [,-1]
-# df2  = data.frame( read_csv(file = "Output/allSubjectGroup_nasalMbiome.csv") )[,-1] 
+df2  = data.frame( read_csv(file = "Output/allSubjectGroup_nasalMbiome_byGenus.csv") )[,-1]
 dat = data.frame(df)
 lrs.unadj = getLogratioFromList(Ratio = colnames(feature.df[,-1]),raMatrix = dat[,-1],Class = dat[,1])
 ## Remove Sparse Features and impute Zeroes
@@ -124,19 +110,20 @@ dat.clr = data.frame(clr(dat[,-1]))
 ## rda
 rda_tree = rda(dat.clr ~ . , data=data.frame(Sex = factor(df[,1])))
 adjPLR = fitted(rda_tree)
-adjPLR = residuals(rda_tree) 
+adjPLR = residuals(rda_tree)
 RsquareAdj(rda_tree)
 coefficients(rda_tree)
 anova(rda_tree,permutations = 5000)
 #dat =  data.frame(Status = df[,1],clrInv(adjPLR))
 dat =  data.frame(Status = df[,1],clrInv(adjPLR))
 lrs.adj = getLogratioFromList(Ratio = colnames(feature.df[,-1]),raMatrix = dat[,-1],Class = dat[,1])
-## Visualize Sex after adj 
+## Visualize Sex after adj
 pc = cmdscale(d = dist(lrs.adj[,-1]))
 pc.df = data.frame(labels = dat[,1],pc)
 ggplot(pc.df,aes(X1,X2,col = labels))+
   geom_point(size = 3,alpha = .75)+
   theme_bw()+
+  ggtitle("After Adj.")+
   stat_ellipse()
 #before adj
 pc = cmdscale(d = dist(feature.df[,-1]))
@@ -144,8 +131,8 @@ pc.df = data.frame(labels = feature.df[,1],pc)
 ggplot(pc.df,aes(X1,X2,col = labels))+
   geom_point(size = 3,alpha = .75)+
   theme_bw()+
+  ggtitle("Before Adj.")+
   stat_ellipse()
-setwd("C:/Users/andrew84/Documents/MicrobiomeProject/Data/R_Projects/Test/MST_Method/")
 
 
 ##---------------------------*
@@ -164,7 +151,7 @@ plot(mod, ellipse = F, hull = T,label = T) # 1 sd data ellipse
 a.df = data.frame(Type = feature.df[,1])
 pmv = vegan::adonis2(d~Type,data = a.df,permutations = 5000)
 (pmv)
-vegan::anosim(x = d,grouping = y_train)
+vegan::anosim(x = d,grouping = df[,1])
 
 
 ##-------------------------*
@@ -216,8 +203,8 @@ tiff(filename = "Figures/bySex_selPermEnergyKeyFeats.tiff",width = 4,height = 3,
 ggplot(results.emp,aes(feats,norm_esat))+
   geom_point()+
   geom_line()+
-  theme_tufte()+
-  geom_rangeframe() +
+  ggthemes::theme_tufte()+
+  ggthemes::geom_rangeframe() +
   xlab("# Taxa")+
   ylab("Normalized Energy")+
   geom_vline(xintercept = results.emp$feats[which.max(results.emp$norm_esat)], col = "red", lty = "dashed")+
@@ -262,13 +249,13 @@ ggplot(coords.df,aes(PC1,PC2,Fill = Group))+
 ##-----------------------------------------*
 colNames = data.frame(colNames)
 feature.df = data.frame(feature.df)
-sign = feature.df %>% 
-  gather("Ratio","Value",2:ncol(feature.df)) %>% 
-  group_by(Status,Ratio) %>% 
+sign = feature.df %>%
+  gather("Ratio","Value",2:ncol(feature.df)) %>%
+  group_by(Status,Ratio) %>%
   summarise(mnValue = mean(Value),CI = ((1.96*sd(Value))/sqrt(n())),lb = mnValue - CI,ub = mnValue + CI)
 sign = data.frame(sign)
-order = sign %>% 
-  filter(Status=='Female') %>% 
+order = sign %>%
+  filter(Status=='Female') %>%
   arrange(desc(mnValue))
 sign$Ratio = factor(sign$Ratio,levels = order$Ratio)
 sign = data.frame(sign)
@@ -303,7 +290,7 @@ ggplot(sign,aes(mnValue,Status,col = Status,fill = Status))+
     legend.position = "top",
     legend.text = element_text(size = 8),
     legend.margin = margin(0,0,0,0,unit = "cm"),
-    legend.box.spacing = unit(0,units = "in"), 
+    legend.box.spacing = unit(0,units = "in"),
     legend.box.margin = margin(0,0,0.1,0,unit = "cm"),
     legend.key.height = unit(.1,units = "in"),
     axis.text.x =  element_text(size = 8),
@@ -329,10 +316,10 @@ eg = 100*clo(eg)
 coords.df = data.frame(Treatment = feature.df[,1],mds$points)
 colnames(coords.df)[-1] = paste0("Dim",1:ncol(coords.df[,-1]))
 ## Compute Centroids
-centroid = coords.df %>% 
-  gather(key = "Dim",value = "Val",2:ncol(coords.df)) %>% 
-  group_by(Treatment,Dim) %>% 
-  summarise(mn = mean(Val)) %>% 
+centroid = coords.df %>%
+  gather(key = "Dim",value = "Val",2:ncol(coords.df)) %>%
+  group_by(Treatment,Dim) %>%
+  summarise(mn = mean(Val)) %>%
   spread(key = "Dim",value = "mn")
 disp = left_join(coords.df,centroid,by = 'Treatment')
 ## Plot
@@ -355,7 +342,7 @@ ggplot(data = coords.df,aes(Dim1,Dim2,col = Treatment,fill = Treatment))+
         axis.title.y = element_text(size = 8,face = "bold"),
         legend.text = element_text(size = 8),
         #legend.direction = "horizontal",
-        legend.margin = margin(0,0,0,0,unit = "cm"),legend.box.spacing = unit(0,units = "in"), 
+        legend.margin = margin(0,0,0,0,unit = "cm"),legend.box.spacing = unit(0,units = "in"),
         legend.title = element_blank(),
         #legend.box.background = element_rect(colour = "black"),legend.key = element_rect(colour = "black"),
         legend.position = "top",legend.key.size = unit(.25,units = "in"),
@@ -418,7 +405,7 @@ mdls = trainML_Models(trainLRs =  data.frame(feature.df[,-1]),
                       cvMethod = "repeatedcv",mtry_ = 1,numFolds = 10,numRepeats = 20,
                       testIDs = NULL,
                       bagModels = F,sampleSize = round(percentBag*nrow(trainData1)),
-                      models = "pls") 
+                      models = "pls")
 ph = mdls$performance
 
 ## Test Predictions ####
@@ -432,8 +419,8 @@ mdlName =mdlNames[1]
 mdl = mdls$models[[mdlName]]
 bestTune = data.frame( mdl$bestTune)
 probs = left_join(bestTune,mdl$pred)
-probs = probs %>% 
-  group_by(pred,obs,rowIndex) %>% 
+probs = probs %>%
+  group_by(pred,obs,rowIndex) %>%
   summarise_all(.funs = mean)
 rocobj5 = pROC::roc(probs$obs,probs[,minorityClass])
 x = pROC::ci.auc(rocobj5)
@@ -445,8 +432,8 @@ ggplot(roc.df,aes(spec,sens))+
   cowplot::theme_cowplot()+
   xlab("1-Specificity")+
   ylab("Sensitivity")+
-  annotate("text", x=.55, y=.45,size = 3,  
-           label = paste0("AUC: ",round(pROC::auc(rocobj5),digits = 3)," (95% CI: 0.842-0.883)")  ) + 
+  annotate("text", x=.55, y=.45,size = 3,
+           label = paste0("AUC: ",round(pROC::auc(rocobj5),digits = 3)," (95% CI: 0.842-0.883)")  ) +
   geom_abline(slope = 1,col = "grey")+
   theme(legend.position = "none",
         text = element_text(size = 8),
@@ -462,14 +449,14 @@ dev.off()
 #  pROC::plot.roc(probs$obs,probs[,minorityClass],col= "black",
 #                 cex.axis = .75,cex.lab = .75,
 #                     print.auc.x =.65, print.auc.y = .3,print.auc.cex = 0.6,
-#                     #main = "LOOCV GLM w/FS",  
+#                     #main = "LOOCV GLM w/FS",
 #                     #print.thres=TRUE,print.thres.best.method="youden",
 #                     percent=F,
 #                     ci = TRUE,                  # compute AUC (of AUC by default)
-#                     print.auc = TRUE)   
+#                     print.auc = TRUE)
 #  dev.off()
 
- 
+
  mdl = mdls$models$pls1
 loadings = data.frame(Ratio = rownames(glm.mdl1$finalModel$scaling),glm.mdl1$finalModel$scaling)
 loadings =  loadings[order(loadings$LD1),]
@@ -529,7 +516,7 @@ loading = data.frame(Ratio = names(loading),Weight = as.vector(loading))
 scores = glm.mdl1$finalModel$scores
 scores = foreach(ii = 1:ncol(scores),.combine = cbind)%do%{
   data.frame(scores[,ii])
-}  
+}
 colnames(scores) = paste0("X",1:ncol(scores))
 glm.mdl1$finalModel$loadings
 coords.df = data.frame(Group = feature.df[,1],scores)
@@ -542,7 +529,7 @@ cn.denom = colNames;colnames(cn.denom)[3:4] = c("denomID","denom")
 loading = left_join(loading,cn.denom[,3:4],by = "denomID")
 loading = left_join(loading,cn.num[3:4],by = "numID")
 loading$ratio_name = paste0("frac(",loading$num, ",", loading$denom,")")
-loading = loading %>% 
+loading = loading %>%
   arrange(desc(Weight))
 loading$Ratio = factor(loading$Ratio,levels = loading$Ratio)
 
@@ -646,7 +633,7 @@ cor.df = cor.df[cor.df$keep==1,]
 cor.df = cor.df[cor.df$sum!=2,]
 cor.df$p.adj = p.adjust(cor.df$p,method = "BH")
 
-# Select Data 
+# Select Data
 intFeats = dat.intg[,-2:-1]
 ### Mbiome Only
 y_train = dat.intg$Status
@@ -658,11 +645,11 @@ mdls = trainML_Models(trainLRs =  data.frame(intFeats1),
                       cvMethod = "repeatedcv",mtry_ = 1,numFolds = 10,numRepeats = 50,
                       testIDs = NULL,
                       bagModels = F,sampleSize = round(percentBag*nrow(trainData1)),
-                      models = "pls") 
+                      models = "pls")
 mdls$performance
 res.mbiom = mdls$models$pls1$resample
 res.mbiom$Rep = str_split(res.mbiom$Resample,"\\.",simplify = T,n = 2)[,2]
-res.mbiom =  aggregate(AUC ~ Rep, data = res.mbiom, 
+res.mbiom =  aggregate(AUC ~ Rep, data = res.mbiom,
                        FUN = function(x) mean(x) )
 res.mbiom$Model = "Mbiome Only"
 
@@ -679,7 +666,7 @@ for(i in 1:nrow(cc)){
   ph$comb =paste0(cc[i,1],"_",cc[i,2])
   dcvScores = rbind(dcvScores,ph)
 }
-dcvScores = aggregate(rowmean ~ Ratio, data = dcvScores, 
+dcvScores = aggregate(rowmean ~ Ratio, data = dcvScores,
                       FUN = function(x) mean(x) )
 dcvScores = dcvScores[order(dcvScores$rowmean,decreasing = T),]
 dcvScores = dcvScores[dcvScores$rowmean>0,]
@@ -692,12 +679,12 @@ mdls = trainML_Models(trainLRs =  data.frame(intFeats),
                       cvMethod = "repeatedcv",mtry_ = 1,numFolds = 10,numRepeats = 50,
                       testIDs = NULL,
                       bagModels = F,sampleSize = round(percentBag*nrow(trainData1)),
-                      models = "rf") 
+                      models = "rf")
 mdls$performance
 varImp(mdls$models[[1]])
 res = mdls$models$pls1$resample
 res$Rep = str_split(res$Resample,"\\.",simplify = T,n = 2)[,2]
-res =  aggregate(AUC ~ Rep, data = res, 
+res =  aggregate(AUC ~ Rep, data = res,
                  FUN = function(x) mean(x) )
 res$Model = "Mbiome+Protein"
 ## Protein Only
@@ -707,12 +694,12 @@ mdls = trainML_Models(trainLRs =  data.frame(intFeats2),
                       cvMethod = "repeatedcv",mtry_ = 1,numFolds = 10,numRepeats = 50,
                       testIDs = NULL,
                       bagModels = F,sampleSize = round(percentBag*nrow(trainData1)),
-                      models = "pls") 
+                      models = "pls")
 mdls$performance
 varImp(mdls$models$pls1)
 res.prot = mdls$models$pls1$resample
 res.prot$Rep = str_split(res.prot$Resample,"\\.",simplify = T,n = 2)[,2]
-res.prot =  aggregate(AUC ~ Rep, data = res.prot, 
+res.prot =  aggregate(AUC ~ Rep, data = res.prot,
                       FUN = function(x) mean(x) )
 res.prot$Model = "Protein Only"
 wilcox.test(res$AUC,res.mbiom$AUC)
@@ -750,11 +737,11 @@ mdls = trainML_Models(trainLRs =  data.frame(intFeats1),
                       cvMethod = "repeatedcv",mtry_ = 1,numFolds = 10,numRepeats = 50,
                       testIDs = NULL,
                       bagModels = F,sampleSize = round(percentBag*nrow(trainData1)),
-                      models = "pls") 
+                      models = "pls")
 mdls$performance
 res.mbiom = mdls$models$pls1$resample
 res.mbiom$Rep = str_split(res.mbiom$Resample,"\\.",simplify = T,n = 2)[,2]
-res.mbiom =  aggregate(AUC ~ Rep, data = res.mbiom, 
+res.mbiom =  aggregate(AUC ~ Rep, data = res.mbiom,
                        FUN = function(x) mean(x) )
 res.mbiom$Model = "Mbiome Only"
 
@@ -771,7 +758,7 @@ for(i in 1:nrow(cc)){
   ph$comb =paste0(cc[i,1],"_",cc[i,2])
   dcvScores = rbind(dcvScores,ph)
 }
-dcvScores = aggregate(rowmean ~ Ratio, data = dcvScores, 
+dcvScores = aggregate(rowmean ~ Ratio, data = dcvScores,
                       FUN = function(x) mean(x) )
 dcvScores = dcvScores[order(dcvScores$rowmean,decreasing = T),]
 dcvScores = dcvScores[dcvScores$rowmean>0,]
@@ -784,12 +771,12 @@ mdls = trainML_Models(trainLRs =  data.frame(intFeats),
                       cvMethod = "repeatedcv",mtry_ = 1,numFolds = 10,numRepeats = 50,
                       testIDs = NULL,
                       bagModels = F,sampleSize = round(percentBag*nrow(trainData1)),
-                      models = "pls") 
+                      models = "pls")
 mdls$performance
 varImp(mdls$models$pls1)
 res = mdls$models$pls1$resample
 res$Rep = str_split(res$Resample,"\\.",simplify = T,n = 2)[,2]
-res =  aggregate(AUC ~ Rep, data = res, 
+res =  aggregate(AUC ~ Rep, data = res,
                  FUN = function(x) mean(x) )
 res$Model = "Mbiome+Protein"
 ## Protein Only
@@ -799,12 +786,12 @@ mdls = trainML_Models(trainLRs =  data.frame(intFeats2),
                       cvMethod = "repeatedcv",mtry_ = 1,numFolds = 10,numRepeats = 50,
                       testIDs = NULL,
                       bagModels = F,sampleSize = round(percentBag*nrow(trainData1)),
-                      models = "pls") 
+                      models = "pls")
 mdls$performance
 varImp(mdls$models$pls1)
 res.prot = mdls$models$pls1$resample
 res.prot$Rep = str_split(res.prot$Resample,"\\.",simplify = T,n = 2)[,2]
-res.prot =  aggregate(AUC ~ Rep, data = res.prot, 
+res.prot =  aggregate(AUC ~ Rep, data = res.prot,
                       FUN = function(x) mean(x) )
 res.prot$Model = "Protein Only"
 wilcox.test(res$AUC,res.mbiom$AUC)
@@ -834,7 +821,7 @@ loading = data.frame(Ratio = names(loading),Weight = as.vector(loading))
 scores = glm.mdl1$finalModel$scores
 scores = foreach(ii = 1:ncol(scores),.combine = cbind)%do%{
   data.frame(scores[,ii])
-}  
+}
 colnames(scores) = paste0("Comp.",1:ncol(scores))
 coords.df = data.frame(Group = y_train,scores)
 coords.df = cbind(coords.df,prot.lr[bool,-2:-1])
