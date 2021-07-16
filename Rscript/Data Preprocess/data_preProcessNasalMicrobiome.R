@@ -1,3 +1,6 @@
+## written by: Andrew Hinton (andrew84@email.unc.edu)
+
+
 rm(list=ls())
 gc()
 
@@ -8,13 +11,13 @@ library(tidyverse)
 
 
 ## initalize parallel compute cluster ####
-clus <- parallel::makeCluster(10) 
+clus <- parallel::makeCluster(10)
 doParallel::registerDoParallel(clus)
 
 ## Load Helper Functions ####
 functions_Path = "Functions/"
 setwd(functions_Path)
-file_names <- dir() 
+file_names <- dir()
 for(i in 1:length(file_names)){
   source(file = file_names[i])
 }
@@ -30,7 +33,7 @@ test = read.delim("Data/OTU_Table.txt")
 taxo = read_tsv("Data/taxonomy.tsv")
 colnames(taxo)[1] = "OTUID"
 test = right_join(taxo,test)
-test = test %>% 
+test = test %>%
   filter(!is.na(Taxon))
 ############################################################-
 
@@ -75,7 +78,7 @@ col_Counts = data.frame(Taxon = names(colSums(test[,-1])),colSums(test[,-1]))
 ############################################################-
 ## Sample Metadata ####
 ############################################################-
-allGroups = right_join(metadata,test) 
+allGroups = right_join(metadata,test)
 rownames(allGroups) = allGroups$SampleID
 ## Output  -  << Metadata >>
 write_csv(df.metadata[,1:25],"Output/sampleMetaData.csv")
@@ -128,8 +131,8 @@ write.csv(df,"Output/bysexTreat_nasalMbiome.csv",row.names = T)
 ############################################################-
 ### Nasal Micrbiome Ecig vs. NonSmoker ####
 ############################################################-
-ecig_ns = right_join(metadata,test) %>% 
-  filter(SubjectGroup!="Smoker") %>% 
+ecig_ns = right_join(metadata,test) %>%
+  filter(SubjectGroup!="Smoker") %>%
   dplyr::rename(Status = SubjectGroup)
 rownames(ecig_ns) = ecig_ns$SampleID
 df = data.frame(Status=ecig_ns$Status,ecig_ns[,26:(ncol(ecig_ns)-1)])
@@ -146,8 +149,8 @@ write.csv(df,"Output/ecig-vs-nonSmoker_nasalMbiome.csv",row.names = T)
 ############################################################-
 ### Nasal Micrbiome Ecig vs. Smoker ####
 ############################################################-
-ecig_ns = right_join(metadata,test) %>% 
-  filter(SubjectGroup!="Nonsmoker") %>% 
+ecig_ns = right_join(metadata,test) %>%
+  filter(SubjectGroup!="Nonsmoker") %>%
   dplyr::rename(Status = SubjectGroup)
 rownames(ecig_ns) = ecig_ns$SampleID
 df = data.frame(Status=ecig_ns$Status,ecig_ns[,26:(ncol(ecig_ns)-1)])
@@ -164,8 +167,8 @@ write.csv(df,"Output/ecig-vs-Smoker_nasalMbiome.csv",row.names = T)
 ############################################################-
 ### Nasal Micrbiome NonSmoker vs. Smoker ####
 ############################################################-
-ecig_ns = right_join(metadata,test) %>% 
-  filter(SubjectGroup!="Ecig") %>% 
+ecig_ns = right_join(metadata,test) %>%
+  filter(SubjectGroup!="Ecig") %>%
   dplyr::rename(Status = SubjectGroup)
 rownames(ecig_ns) = ecig_ns$SampleID
 df = data.frame(Status=ecig_ns$Status,ecig_ns[,26:(ncol(ecig_ns)-1)])
