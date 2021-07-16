@@ -8,12 +8,12 @@ E-cigarettes are often perceived as safer than cigarettes, but previous research
 
 ## Repository Structure
 ### Data
-- "2019_09_13 ELFmetadata.csv"           
-- "2020_06_11 NLF Data.csv"              
-- "OTU_Table_contaminantsFilteredOut.txt"
-- "raw-OTUtable-hdf5.biom"               
-- "rooted-tree.nwk"                      
-- "taxonomy.tsv" 
+- *2019_09_13 ELFmetadata.csv*           
+- *2020_06_11 NLF Data.csv*              
+- *OTU_Table_contaminantsFilteredOut.txt*
+- *raw-OTUtable-hdf5.biom*               
+- *rooted-tree.nwk*                      
+- *taxonomy.tsv* 
 
 ### Functions
 
