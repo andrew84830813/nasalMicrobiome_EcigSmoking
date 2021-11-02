@@ -72,10 +72,10 @@ set.seed(seed_)
 switch(dataset_,
 
        ## By Sex
-       {dat = data.frame( read_csv(file = "Data/bySex_nasalMbiome_byGenus.csv") ) [,-1];
+       {dat = data.frame( read_csv(file = "Output/bySex_nasalMbiome_byGenus.csv") ) [,-1];
        fname = "bySex_NasalMicrobiomeGenus_80sparse"}, ## - 1
-       ## By Treatment
-       {dat = data.frame( read_csv(file = "Data/byTreatment_adjSex_byGenus_80sparse.csv") );
+       ## By Treatment (File derived after adjustment)
+       {dat = data.frame( read_csv(file = "Output/byTreatment_adjSex_byGenus_80sparse.csv") );
        fname = "byTreatGenusadjSex_NasalMicrobiome_80sparse"} ## - 2
 
 )
