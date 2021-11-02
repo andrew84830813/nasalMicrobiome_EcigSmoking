@@ -1,0 +1,74 @@
+#SampleID	SampleDescription	Sex	Race	Hispanic	Age	BMI	SubjectGroup	Device	Visit	Visit_Date	Visit_Month	Visit_Season	NoseSide	ExrtBatch	SeqBatch	Avg_Cigs_PerDay	Avg_LittleCigars_PerDay	Avg_ECig_PuffsPerDay	Avg_ECig_mLPerDay	Avg_ECig_Nicotine_mgmL	ECig_Flavor	MarijuanaUse	SmokingHistory	OtherSubstanceHistory	SerumCotinineELISA
+SA001V3L	ELF	Female	African American	non	34	27.3	Smoker	Cigarette	3	8/22/16	August	Summer	Left	4	2	13.05	0	0	0	0	NA	No	yes	no	303.3844
+SA002V1R	ELF	Female	White	non	28	37.67	Nonsmoker	None	1	8/12/16	August	Summer	Right	3	2	0	0	0	0	0	NA	No	no	yes	0
+SA008V3R	ELF	Female	African American	non	40	33.4	Nonsmoker	None	3	8/12/16	August	Summer	Right	5	2	0	0	0	0	0	NA	No	no	no	0
+SA009V3R	ELF	Female	African American	non	33	40.4	Smoker	Cigarette	3	12/14/17	December	Winter	Right	2	1	16.04	0	0	0	0	NA	Yes	yes	yes	159.0599
+SA016V3R	ELF	Female	American Indian	hispanic	33	35	Nonsmoker	None	3	8/26/16	August	Summer	Left	5	2	0	0	0	0	0	NA	No	no	no	0
+SA024V3L	ELF	Male	White	non	34	26.5	Nonsmoker	None	3	5/2/14	May	Spring	Left	5	2	0	0	0	0	0	NA	No	no	no	0
+SA039V5L	ELF	Male	White	non	31	35.6	Smoker	Cigarette	5	12/7/16	December	Winter	Left	5	2	11.93	0	0	0	0	NA	No	yes	no	163.525
+SA053V1R	ELF	Female	Asian	non	25	23.8	Ecig	Traditional E Cig	1	6/5/15	June	Summer	Right	3	2	0	0	69			NA	No	yes	yes	228.875
+SA055V3R	ELF	Male	White	non	24	24.5	Smoker	Cigarette	3	9/6/16	September	Fall	Right	3	2	12.21	0	0	0	0	NA	No	yes	yes	65.8675
+SA056V1R	ELF	Male	Multiracial	non	27	20.7	Smoker	Cigarette	1	6/10/15	June	Summer	Right	1	1	4.93	0	0	0	0	NA	No	yes	no	54.8891
+SA057V1R	ELF	Male	Asian	non	28	35.8	Ecig	Traditional E Cig	1	6/15/15	June	Summer	Right	4	2	1.15	0	221			NA	No	yes	yes	156.2425
+SA058V1L	ELF	Female	African American	non	28	41.8	Ecig	Traditional E Cig	1	6/23/15	June	Summer	Left	1	1	0	0	4			NA	No	yes	no	65.745
+SA064V5L	ELF	Female	African American	non	38	46.5	Ecig	Traditional E Cig	5	4/2/18	April	Spring	Left	5	2	0	0		0.24	18	menthol_or_tobacco	No	yes	yes	13.8596
+SA066V1R	ELF	Male	Asian	non	21	20.7	Ecig	Traditional E Cig	1	8/7/15	August	Summer	Right	5	2	0	0		2	18	fruity_or_sweet	No	yes	yes	292.1079
+SA069V3R	ELF	Male	White	non	24	36.6	Ecig	Traditional E Cig	3	9/29/16	September	Fall	Right	3	2	0	0		5.12		mixed	No	yes	no	132.4725
+SA070V1L	ELF	Male	White	non	28	20.9	Smoker	Cigarette	1	9/11/15	September	Fall	Left	4	2	9.73	0	1	0	0	NA	No	yes	yes	145.1975
+SA071VXR	ELF	Female	African American	non	34	28.1	Smoker	Cigarette	1	9/16/15	September	Fall	Right	3	2	5.04	0	0	0	0	NA	No	yes	yes	136.3211
+SA074V1R	ELF	Male	White	non	25	23.4	Nonsmoker	None	1	9/14/15	September	Fall	Right	2	1	0	0	0	0	0	NA	No	no	no	0
+SA075V1R	ELF	Female	White	non	25	18.7	Nonsmoker	None	1	9/23/15	September	Fall	Right	2	1	0	0	0	0	0	NA	No	no	no	0
+SA076V1R	ELF	Female	White	non	31	23.4	Nonsmoker	None	1	9/24/15	September	Fall	Right	4	2	0	0	0	0	0	NA	No	no	no	0
+SA077V1R	ELF	Female	White	non	26	23	Nonsmoker	None	1	11/12/15	November	Fall	Right	4	2	0	0	0	0	0	NA	No	no	no	0
+SA078V1R	ELF	Male	African American	non	21	26.2	Smoker	Cigarette	1	2/16/16	February	Winter	Right	4	2	13.5	0	0	0	0	NA	No	yes	no	63.95
+SA081V1L	ELF	Male	White	non	47	35.7	Smoker	Cigarette	1	3/28/16	March	Spring	Left	1	1	8	0	0	0	0	NA	No	yes	no	57.2175
+SA082V1R	ELF	Female	White	non	48	32.5	Smoker	Cigarette	1	3/28/16	March	Spring	Right	5	2	20	0	0	0	0	NA	No	yes	no	166.0749
+SA084V1L	ELF	Female	Asian	non	25	24.7	Nonsmoker	None	1	3/22/16	March	Spring	Left	2	1	0	0	0	0	0	NA	No	no	no	0
+SA087V1L	ELF	Male	White	non	24	26	Ecig	Traditional E Cig	1	5/3/16	May	Spring	Left	4	2	0	0.22		5	3	mixed	Yes	yes	yes	140.61
+SA088V3L	ELF	Male	White	non	25	21.74	Ecig	Traditional E Cig	3	9/14/16	September	Fall	Left	1	1	0	0		8.41	6	mixed	No	no	no	105.6775
+SA091V1R	ELF	Male	Pacific Islander	hispanic	21	26.4	Ecig	Traditional E Cig	1	11/30/16	November	Fall	Right	2	1	0.16	0	16.71	6.73	53.57	fruity_or_sweet	No	yes	no	75.72
+SA092V1L	ELF	Female	African American	non	26	22.1	Ecig	Traditional E Cig	1	12/2/16	December	Winter	Left	2	1	0	0	26.69		6	mixed	No	no	yes	184.295
+SA094V1L	ELF	Female	White	non	23	34.4	Ecig	Traditional E Cig	1	12/14/16	December	Winter	Left	5	2	0	0	14.16		6	mixed	No	no	no	0
+SA096V1R	ELF	Female	African American	non	24	22.3	Smoker	Cigarette	1	3/24/17	March	Spring	Right	1	1	14.16	0	0	0	0	NA	No	yes	no	289.8
+SA098V1L	ELF	Male	Asian	non	21	24.54	Ecig	Traditional E Cig	1	2/21/17	February	Winter	Left	5	2	0	0	13.24	0.24	3	fruity_or_sweet	No	no	yes	0
+SA100V1L	ELF	Female	White	non	31	19.9	Nonsmoker	None	1	2/21/17	February	Winter	Left	1	1	0	0	0	0	0	NA	No	no	no	0
+SA101V1L	ELF	Female	White	non	27	27.5	Nonsmoker	None	1	2/21/17	February	Winter	Left	2	1	0	0	0	0	0	NA	No	no	no	0
+SA104V1L	ELF	Male	White	non	24	27.14	Nonsmoker	None	1	3/2/17	March	Spring	Left	3	2	0	0	0	0	0	NA	No	no	no	0
+SA105V1L	ELF	Female	White	non	45	28.18	Nonsmoker	None	1	3/2/17	March	Spring	Left	3	2	0	0	0	0	0	NA	No	no	no	0
+SA106V1L	ELF	Female	White	non	32	26.45	Nonsmoker	None	1	3/2/17	March	Spring	Left	1	1	0	0	0	0	0	NA	No	no	no	0
+SA109V1R	ELF	Male	White	non	38	43.7	Ecig	Traditional E Cig	1	4/12/17	April	Spring	Right	1	1	0	0			13.93	NA	No	yes	yes	187.2609
+SA111V1R	ELF	Male	White	non	24	35.03	Ecig	Traditional E Cig	1	4/11/17	April	Spring	Right	5	2	0	0	281	30.18	3	fruity_or_sweet	No	yes	no	212.0441
+SA112V1R	ELF	Female	White	non	33	18.8	Smoker	Cigarette	1	4/13/17	April	Spring	Right	2	1	17.5	0	0	0	0	NA	No	yes	no	402.315
+SA114VXR	ELF	Female	White	non	18	26	Ecig	Traditional E Cig	1	4/13/17	April	Spring	Right	4	2	0	0	17.04	4.95		fruity_or_sweet	No	no	no	0
+SA115V1L	ELF	Male	White	non	21	31.4	Ecig	Traditional E Cig	1	5/10/15	May	Spring	Left	3	2	0	0		6.05	3	mixed	No	yes	no	126.2527
+SA116V1L	ELF	Male	White	non	25	24.1	Ecig	Traditional E Cig	1	5/24/17	May	Spring	Left	1	1	0	0		3.61		NA	Yes	yes	yes	47.0802
+SA118VXL	ELF	Male	White	non	20	32.24	Ecig	Traditional E Cig	1	6/1/17	June	Summer	Left	4	2	0	0	6.27	1.07	0	fruity_or_sweet	No	no	yes	36.3492
+SA119V1L	ELF	Female	White	non	43	47.6	Ecig	Traditional E Cig	1	6/1/17	June	Summer	Left	3	2	0	0	190	2.05	24	fruity_or_sweet	No	yes	no	
+SA120V1L	ELF	Female	African American	non	31	25.7	Smoker	Cigarette	1	6/23/17	June	Summer	Left	3	2	9.96	0.11	0	0	0	NA	No	yes	no	170.6667
+SA121VXL	ELF	Female	African American	non	35	34.8	Nonsmoker	None	1	6/19/17	June	Summer	Left	1	1	0	0	0	0	0	NA	No	no	no	0
+SA122V1L	ELF	Male	White	non	34	19.8	Nonsmoker	None	1	6/20/17	June	Summer	Left	4	2	0	0	0	0	0	NA	No	no	no	0
+SA123V1L	ELF	Male	White	non	24	26.1	Nonsmoker	None	1	6/22/17	June	Summer	Left	4	2	0	0	0	0	0	NA	No	no	no	0
+SA124V1R	ELF	Male	White	non	21	24.7	Ecig	Traditional E Cig	1	6/28/17	June	Summer	Right	3	2	0.14	0.07		2.95	6	fruity_or_sweet	No	yes	yes	104.9792
+SA125V1L	ELF	Female	White	non	40	22	Smoker	Cigarette	1	7/27/17	July	Summer	Left	5	2	9.29	0	0	0	0	NA	No	yes	no	180.553
+SA126V1L	ELF	Male	African American	non	28	21.1	Smoker	Cigarette	1	7/28/17	July	Summer	Left	2	1	16.61	0	0	0	0	NA	Yes	yes	yes	241.2379
+SA127V1L	ELF	Female	African American	non	48	31.4	Ecig	Traditional E Cig	1	7/25/17	July	Summer	Left	4	2	0	0	98.08	7.29		fruity_or_sweet	No	yes	no	181.8601
+SA130V1R	ELF	Male	White	non	26	20	Nonsmoker	None	1	7/31/17	July	Summer	Right	3	2	0	0	0	0	0	NA	No	no	no	0
+SA132VXR	ELF	Male	White	non	23	27.5	Smoker	Cigarette	1	9/11/17	September	Fall	Right	5	2	17.68	0	0	0	0	NA	Yes	yes	yes	232.767
+SA133V1R	ELF	Male	White	non	33	23.6	Ecig	Traditional E Cig	1	9/1/17	September	Fall	Right	1	1	0	0		4.61		NA	No	yes	no	207.7938
+SA135V1R	ELF	Male	Asian	non	33	27.6	Ecig	Traditional E Cig	1	10/10/17	October	Fall	Right	4	2	0.03	0		1.77	11.91	fruity_or_sweet	No	yes	no	162.7712
+SA138V1R	ELF	Male	White	hispanic	39	36.8	Nonsmoker	None	1	10/19/17	October	Fall	Right	5	2	0	0	0	0	0	NA	No	no	no	0
+SA140V1R	ELF	Male	White	non	31	29.7	Nonsmoker	None	1	10/26/17	October	Fall	Right	1	1	0	0	0	0	0	NA	No	no	no	0
+SA141V1R	ELF	Female	African American	non	29	27.5	Smoker	Cigarette	1	1/12/18	January	Winter	Right	4	2	14.21	0	0	0	0	NA	Yes	yes	yes	76.4459
+SA142V1L	ELF	Male	White	hispanic	21	23.2	Ecig	Juul	1	4/25/18	April	Spring	Left	3	2	0.14	0	33	0.14	50	mixed	No	yes	no	153.9619
+SA143V1R	ELF	Male	White	non	20	29.8	Ecig	Juul	1	5/4/18	May	Spring	Right	2	1	0.11	0.18	81.11		5	mixed	No	yes	no	63.79
+SA144V1L	ELF	Male	White	non	20	29.5	Ecig	Juul	1	5/9/18	March	Spring	Left	2	1	0	0	48.21	0.35	50	fruity_or_sweet	Yes	yes	no	151.1088
+SA145V1L	ELF	Male	White	non	20	17	Ecig	Juul	1	5/15/18	May	Spring	Left	2	1	0.36	0	78.9		50	mixed	Yes	yes	yes	198.9634
+SA146V1L	ELF	Male	White	non	47	35.5	Smoker	Cigarette	1	5/29/18	May	Spring	Left	2	1	15.68	0.11	0	0	0	NA	No	yes	yes	198.194
+SA147V1L	ELF	Male	White	hispanic	24	33	Smoker	Cigarette	1	7/25/18	July	Summer	Left	3	2	11.46	0	7.86	0.29	3	fruity_or_sweet	No	yes	yes	125.5572
+SA148V1L	ELF	Female	White	non	30	34.8	Ecig	Juul	1	7/2/18	July	Summer	Left	1	1	1.43	0			19.5	menthol_or_tobacco	No	yes	no	225.7881
+PseudomonasPositive	Positive Control						Positive Control																		
+PCRNegativeA	Negative Control						PCR Negative Control																		
+KITNEG01	Negative Control						Kit Negative Control																		
+KITNEG02	Negative Control						Kit Negative Control																		
+ELFNEG01	Negative Control						ELF Negative Control																		
+ELFNEG02	Negative Control						ELF Negative Control																		
